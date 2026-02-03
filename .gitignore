@@ -1,4 +1,4 @@
 *.elf
 *.o
-*.lst
-*.debug
+*.elf.lst
+*.elf.debug
