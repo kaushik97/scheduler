@@ -1,6 +1,8 @@
 #include<stdint.h>
 #include "TCB.h"
 
+#define PSP_MODE
+
 #define ICSR (*(volatile uint32_t*)0xE000ED04)
 
 extern void NMI_handler();
@@ -21,59 +23,10 @@ void sysTick_handler() {
     ICSR = (1 << 28);
 }
 
-// Exception pendSV handler - Using MSP only for context switching
-__attribute__((naked)) 
-void pendSV_handler() {
-    __asm volatile
-    (
-        ".syntax unified \n"
-        ".thumb \n"
-        /*push current task r4-r11 to stack*/
-        "push {r4-r7} \n"
-        "mov r0, r8 \n"
-        "mov r1, r9 \n"
-        "mov r2, r10 \n"
-        "mov r3, r11 \n"
-        "push {r0-r3} \n"
-
-        // If scheduler already started, save sp
-        "ldr r0, =schedularStarted \n"
-        "ldr r0, [r0] \n"
-        "cmp r0, #0 \n"
-        "beq skip_save \n"
-
-        // Storing current task sp
-        "mrs r0, msp \n"
-        "ldr r1, =head \n"
-        "ldr r1, [r1] \n"
-        "str r0, [r1] \n" 
-        
-        "skip_save: \n"
-        "movs r0, #1 \n"
-        "ldr r1, =schedularStarted \n"
-        "str r0, [r1] \n"
-
-        // Save next as current
-        "ldr r0, =head \n"
-        "ldr r1, [r0] \n"
-        "ldr r1, [r1, #4] \n"
-        "str r1, [r0] \n"
-        "ldr r0, [r0] \n"
-        "ldr r0, [r0] \n"
-        "msr msp, r0 \n"
-        "pop {r4-r7} \n"
-        "mov r8, r4 \n"
-        "mov r9, r5 \n"
-        "mov r10, r6 \n"
-        "mov r11, r7 \n"
-        "pop {r4-r7} \n"
-        "bx lr \n"
-    );
-}
-
 // Exception pendSV handler - Using PSP for context switching
 __attribute__((naked))
 void pendSV_handler() {
+    #ifdef PSP_MODE
     __asm volatile 
     (
         ".syntax unified \n"
@@ -124,4 +77,54 @@ void pendSV_handler() {
         "mov lr, r0 \n"
         "bx lr \n"
     );
+
+    #endif
+
+    #ifdef MSP_MODE
+         __asm volatile
+    (
+        ".syntax unified \n"
+        ".thumb \n"
+        /*push current task r4-r11 to stack*/
+        "push {r4-r7} \n"
+        "mov r0, r8 \n"
+        "mov r1, r9 \n"
+        "mov r2, r10 \n"
+        "mov r3, r11 \n"
+        "push {r0-r3} \n"
+
+        // If scheduler already started, save sp
+        "ldr r0, =schedularStarted \n"
+        "ldr r0, [r0] \n"
+        "cmp r0, #0 \n"
+        "beq skip_save \n"
+
+        // Storing current task sp
+        "mrs r0, msp \n"
+        "ldr r1, =head \n"
+        "ldr r1, [r1] \n"
+        "str r0, [r1] \n" 
+        
+        "skip_save: \n"
+        "movs r0, #1 \n"
+        "ldr r1, =schedularStarted \n"
+        "str r0, [r1] \n"
+
+        // Save next as current
+        "ldr r0, =head \n"
+        "ldr r1, [r0] \n"
+        "ldr r1, [r1, #4] \n"
+        "str r1, [r0] \n"
+        "ldr r0, [r0] \n"
+        "ldr r0, [r0] \n"
+        "msr msp, r0 \n"
+        "pop {r4-r7} \n"
+        "mov r8, r4 \n"
+        "mov r9, r5 \n"
+        "mov r10, r6 \n"
+        "mov r11, r7 \n"
+        "pop {r4-r7} \n"
+        "bx lr \n"
+    );
+    #endif
 }
