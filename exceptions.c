@@ -27,6 +27,7 @@ void sysTick_handler() {
 __attribute__((naked))
 void pendSV_handler() {
     #ifdef PSP_MODE
+    
     __asm volatile 
     (
         ".syntax unified \n"
