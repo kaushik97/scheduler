@@ -1,0 +1,30 @@
+PROJ = scheduler
+CPU ?= cortex-m0plus
+GCC = arm-none-eabi-gcc
+GCC_LD = arm-none-eabi-ld
+GCC_AS = arm-none-eabi-as
+GCC_OBJDUMP = arm-none-eabi-objdump
+GCC_READELF = arm-none-eabi-readelf
+CFLAGS = -mcpu=$(CPU) -mthumb -g 
+
+OBJ = boot.o main.o exceptions.o tcb.o
+INC = -I.
+
+.PHONY: all
+
+all: $(PROJ).elf
+
+$(PROJ).elf: $(OBJ)
+	$(GCC_LD) -T linker.ld	$^ -o $@
+	$(GCC_OBJDUMP) -D -S $@ > $@.lst
+	$(GCC_READELF) -a $@ > $@.debug
+
+%.o: %.s
+	$(GCC_AS) $(CFLAGS) -c $^ -o $@
+
+%.o: %.c
+	$(GCC) $(INC) $(CFLAGS) -c $^ -o $@
+	
+clean:
+	find . -name "*.o" -delete
+	rm -f *.out *.elf *.lst *.debug

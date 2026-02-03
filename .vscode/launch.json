@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug SAMC21 (EDBG)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "openocd",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/scheduler.elf",
+      "device": "ATSAMC21J18A",
+      "configFiles": [
+        "interface/cmsis-dap.cfg",
+        "target/atsamc21.cfg"
+      ],
+      "svdFile": "${workspaceFolder}/ATSAMC21.svd",
+      "runToEntryPoint": "reset_handler",
+      "preLaunchCommands": [
+        "monitor reset halt"
+      ]
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/Kaushik/OneDrive/Desktop/Workspace/Scheduler",
+      "program": "c:/Users/Kaushik/OneDrive/Desktop/Workspace/Scheduler/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
